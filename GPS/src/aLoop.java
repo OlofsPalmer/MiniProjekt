@@ -5,7 +5,7 @@ public class aLoop {
 		
 		//en kommentar
 		for (int i = 0; i < 2; i++) {
-			System.out.println("Hej");
+			System.out.println("Hej"); //Den här skriver hej.
 		}
 	}
 }
