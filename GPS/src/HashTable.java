@@ -42,22 +42,23 @@ public class HashTable {
 		//int index = hashCode(newCity);   //where to put the city in array
 		
 		CityList list = table[index];
-		//här ändrar jag
-		
-		if (table[index] != null && !list.city.name.equals(newCity.name)) {
-			// index = findPos(newCity, list, index);
-
-			while (!list.city.name.equals(newCity.name) && table[index] != null) {
-
+			
+		while (table[index] != null && !list.city.name.equals(newCity.name)) {
+			if (list.listKey == newCity.key) {
 				index++;
-				if (index == table.length) {
-					index = 0;
-				}
-
+				list = table[index];
+				newCity.key = index;
+				break;
 			}
-			list = table[index];
-			newCity.key = index;
+			
+			index++;
+			if (index == table.length) {
+				index = 0;
+			}
 		}
+		list = table[index];
+		newCity.key = index;
+		
 		
 		while(list != null) {
 			list = list.next;
@@ -86,19 +87,6 @@ public class HashTable {
 		}
 		return index;
 	}
-	
-	/*
-	public int hashCode(City city) {
-		int hash = 1;
-		hash = hash * 17 + String.valueOf(city.key).hashCode();
-		hash = hash * 31 + city.name.hashCode();
-		return (hash & 0x7fffffff) % table.length;
-	}
-	
-	private int hash(int key) {
-		String key2 = String.valueOf(key);
-	      return (Math.abs(key2.hashCode())) % table.length;
-	   }*/
 
 	//prints the whole hashTable including lists
 	public void dump() {
@@ -119,6 +107,12 @@ public class HashTable {
 	//print the list of the city
 	public void searchCity(String str) {
 		CityList list = table[City.cityKey(str)];
+		int index = list.listKey;
+		
+		while(table[index] != null && !list.city.name.equals(str)) {
+			index++;
+			list = table[index];
+		}
 		
 		if(list == null) {
 			System.out.println("No city with that name");
@@ -131,8 +125,15 @@ public class HashTable {
 	}
 	
 	
-	public CityList getList(String str) {
+	public static CityList getList(String str) {
 		CityList list = table[City.cityKey(str)];
+		int index = list.listKey;
+		
+		while(table[index] != null && !list.city.name.equals(str)) {
+			index++;
+			list = table[index];
+		}
+		
 		int x = list.listSize;
 		System.out.println(x);
 		return list;
@@ -170,7 +171,7 @@ public class HashTable {
 	}
 	
 	public static void main (String[] args) {
-		System.out.println(getNextPrime(548));
+		//System.out.println(getNextPrime(548));
 		HashTable tab = new HashTable();
 		TreeSet<String> tree = new TreeSet<>();
 		
@@ -188,7 +189,7 @@ public class HashTable {
 			e.printStackTrace();
 		}
 		//tree.forEach(System.out::println);
-		tab.dump();
+		//tab.dump();
 		
 		System.out.println(tree.size());
 		size();
@@ -196,8 +197,7 @@ public class HashTable {
 		//System.out.println(count);
 		//System.out.println(dubblett);
 		
-		//tab.searchCity("Götmark");
-		//System.out.println(tab.getList("Götmark").listSize);
-		
+		tab.searchCity("Eriksås");
+		System.out.println(getList("Eriksås").listKey);
 	}
 }
