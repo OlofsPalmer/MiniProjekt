@@ -42,7 +42,7 @@ public class HashTable {
 		//int index = hashCode(newCity);   //where to put the city in array
 		
 		CityList list = table[index];
-		
+		//här ändrar jag
 		
 		if (table[index] != null && !list.city.name.equals(newCity.name)) {
 			// index = findPos(newCity, list, index);
