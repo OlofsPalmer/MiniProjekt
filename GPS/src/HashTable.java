@@ -198,6 +198,6 @@ public class HashTable {
 		//System.out.println(dubblett);
 		
 		tab.searchCity("Eriksås");
-		System.out.println(getList("Eriksås").listKey);
+		//System.out.println(getList("Eriksås").listKey);
 	}
 }
