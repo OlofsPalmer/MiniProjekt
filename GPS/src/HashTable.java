@@ -1,179 +1,158 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.TreeSet;
 
 public class HashTable {
-	public static int dubblett = 0;
 	
-	private static class CityList{
+	private static class CityNode{
 		public City city;
-		public int listKey;
-		private CityList next;
-		public int listSize;
+		public int NodeKey;
+		private CityNode next;
 		
 		
-		public CityList(City theCity) {
+		public CityNode(City theCity) {
 			this(theCity, null);
-			this.listKey = theCity.key;
-			listSize++;
+			this.NodeKey = theCity.key;
 		}
 		
-		public CityList(City theCity, CityList n) {
+		public CityNode(City theCity, CityNode n) {
 			city = theCity;
 			next = n;
-			listKey = theCity.key;
-			listSize++;
+			NodeKey = theCity.key;
 		}
 	}
 	
-
-	private static CityList[] table; //The HashTable
+	private static CityNode[] table; //The HashTable
 	public static int count; // The number of cities
 	
 
 	public HashTable() {
-	      table = new CityList[6247];
+	      table = new CityNode[City.modulus];
 	   }
 	
+
 	public void add(City newCity) {
 		
 		int index = newCity.key;   //where to put the city in array
-		//int index = hashCode(newCity);   //where to put the city in array
+		int offset = 1;
 		
-		CityList list = table[index];
+		CityNode Node = table[index];
 			
-		while (table[index] != null && !list.city.name.equals(newCity.name)) {
-			if (list.listKey == newCity.key) {
-				index++;
-				list = table[index];
-				newCity.key = index;
+		while (table[index] != null && !Node.city.name.equals(newCity.name)) {
+			
+			if (Node.NodeKey == newCity.key && Node.city.name.equals(newCity.name)) {
 				break;
 			}
 			
-			index++;
-			if (index == table.length) {
-				index = 0;
-			}
-		}
-		list = table[index];
-		newCity.key = index;
-		
-		
-		while(list != null) {
-			list = list.next;
-		}
-		
-		if(list == null) {
-			CityList newList = new CityList(newCity);
-			newList.listKey = newCity.key;
-			newList.next = table[index];
-			table[index] = newList;
-			count++;
-		}
-	}
-	
-	public int findPos(City city, CityList list, int ind) {
-
-		int offset = 1;
-		int index = ind;
-
-		while (table[index] != null && !list.city.name.equals(city.name)) {
 			index += offset;
 			offset += 2;
 			if (index >= table.length) {
 				index -= table.length;
 			}
+			Node = table[index];
 		}
-		return index;
+		
+		newCity.key = index;
+		
+		if (table[index] == null) {
+			Node = new CityNode(newCity);
+			Node.next = table[index];
+			table[index] = Node;
+			Node.NodeKey = newCity.key;
+			count++;
+		} else {
+			
+			while (Node != null) {
+				Node = Node.next;
+			}
+			CityNode temp = new CityNode(newCity);
+			if (Node == null) {
+				temp.next = table[index];
+				table[index] = temp;
+				Node = temp;
+				Node.NodeKey = newCity.key;
+			}
+		}
 	}
 
-	//prints the whole hashTable including lists
+	//prints the whole hashTable including Nodes
 	public void dump() {
 		System.out.println();
 		for (int i = 0; i < table.length; i++) {
 			if (table[i] != null) {
 				System.out.println(i + ":");
-				CityList list = table[i]; // For traversing linked list number i.
-				while (list != null) {
-					System.out.println(list.city);
-					list = list.next;
+				CityNode Node = table[i];
+				while (Node != null) {
+					System.out.println(Node.city);
+					Node = Node.next;
 				}
 				System.out.println();
 			}
 		}
 	}
 	
-	//print the list of the city
-	public void searchCity(String str) {
-		CityList list = table[City.cityKey(str)];
-		int index = list.listKey;
-		
-		while(table[index] != null && !list.city.name.equals(str)) {
-			index++;
-			list = table[index];
+	public static int getIndex(String str) {
+		CityNode Node = table[City.cityKey(str)];
+		int index = Node.NodeKey;
+		int offset = 1;
+		while(table[index] != null && !Node.city.name.equals(str)) {
+			index += offset;
+			offset += 2;
+			if (index >= table.length) {
+				index -= table.length;
+			}
+			Node = table[index];
 		}
+		return index;
+	}
+	
+	//print the Node of the city
+	public static void searchCity(String str) {
+		CityNode Node = table[getIndex(str)];
 		
-		if(list == null) {
+		if(Node == null) {
 			System.out.println("No city with that name");
 		}else {
-			while(list != null) {
-				System.out.println(list.city);
-				list = list.next;
+			while(Node != null) {
+				System.out.println(Node.city);
+				Node = Node.next;
 			}
 		}
 	}
 	
+	public static CityNode getNode(String str) {
+		CityNode Node = table[getIndex(str)];
+		return Node;
+	}
 	
-	public static CityList getList(String str) {
-		CityList list = table[City.cityKey(str)];
-		int index = list.listKey;
+	
+	//returns connections of a city in a ArrayList
+	public static ArrayList<City> getConnections(String str){
+		ArrayList<City> connections = new ArrayList<City>();
+		CityNode Node = table[getIndex(str)];
+		if(Node == null) {
+			return null;
+		}else {
+			while(Node != null) {
+				City temp = City.getOtherCity(Node.city.getConnection(), Node.city.getDistance());
+				connections.add(temp);
+				Node = Node.next;
+			}
+		}
 		
-		while(table[index] != null && !list.city.name.equals(str)) {
-			index++;
-			list = table[index];
-		}
 		
-		int x = list.listSize;
-		System.out.println(x);
-		return list;
+		return connections;
 	}
 	
-	public static void size() {
-		int x = 0;
-		for (int i = 0; i < table.length; i++) {
-			if(table[i] != null) {
-				x++;
-			}
-		}
-		System.out.println(x);
-	}
-
-	//check if number is a prime number
-	public static boolean isPrime(int number) {
-		if (number % 2 == 0) {//skip even numbers numbers
-			return false;
-		}
-		for (int i = 3; i * i <= number; i+=2) {//all odd numbers after two
-			if (number % i == 0) {
-				return false;
-			}
-		}
-		return true;
-	}
 	
-	public static int getNextPrime(int min) {
-		for (int i = min; true; i++) {
-			if (isPrime(i)) {
-				return i;
-			}
-		}
+	public static int size() {
+		System.out.println(count);
+		return count;
 	}
 	
 	public static void main (String[] args) {
-		//System.out.println(getNextPrime(548));
 		HashTable tab = new HashTable();
-		TreeSet<String> tree = new TreeSet<>();
 		
 		try {
 			Scanner scan = new Scanner(new File("sveland.txt"));
@@ -182,22 +161,19 @@ public class HashTable {
 				String[] temparr = temp.split(" ");
 				City x = new City(temparr[0], temparr[1], Integer.parseInt(temparr[2]));
 				tab.add(x);
-				tree.add(temparr[0]);
 			}
 			scan.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		//tree.forEach(System.out::println);
 		//tab.dump();
-		
-		System.out.println(tree.size());
+		searchCity("Söderbo");
+		//CityNode test = getNode("Söderbo");
+		//System.out.println(getNode("Söderbo").NodeKey);
 		size();
+		System.out.println(getIndex("Söderbo"));
 		
-		//System.out.println(count);
-		//System.out.println(dubblett);
-		
-		tab.searchCity("Eriksås");
-		//System.out.println(getList("Eriksås").listKey);
+		ArrayList<City> connections = getConnections("Söderbo");
+		connections.forEach(System.out::println);
 	}
 }
